@@ -16,14 +16,13 @@ cli
 	.option("-n, --no-attachments", "Replicate attachments as 0-byte stubs (use something like varnish to route to mirrors)", false)
 	.option("-c, --concurrency [NUM]", "Number of documents replicating at a time [48]", 48)
 	.option("-m, --max-sockets [NUM]", "Max tcp sockets to use during replication [24]", 24)
-	.option("--setup [HOST]", "Intended to configure a fresh couchdb server as a private npm registry, where HOST is the proxy hostname", null)
+	.option("--setup [HOST]", "Intended to configure a fresh couchdb server as a private npm registry", null)
 	.option("--user [USER]", "Username for target couchdb server (environment variable AUTH_USER as alternative)")
 	.option("--pass [PASS]", "Password for target couchdb server (environment variable AUTH_PASS as alternative)")
 	.parse(process.argv);
 
 cli.user = cli.user || process.env.AUTH_USER;
 cli.pass = cli.pass || process.env.AUTH_PASS;
-
 
 
 http.globalAgent.maxSockets = cli.maxSockets;
@@ -47,7 +46,7 @@ cli.targetBase = targetObj.protocol + "//" + (targetObj.auth ? targetObj.auth + 
 
 
 
-var rep = new Replicator(cli);
+var interval,rep = new Replicator(cli);
 
 var setup;
 if (cli.setup) {
@@ -67,24 +66,34 @@ setup.then(function(){
 })
 .then(function(json){
 	console.error("Replicating documents");
-	var interval = setInterval(function(){
-		if (rep.queueLen > 0) {
-			status(rep.queueLen + " documents to go");
-		} else {
-			status("");
-			clearInterval(interval);
-		}
-	},50);
+	if (process.stderr.isTTY) {
+		interval = setInterval(function(){
+			if (rep.queueLen > 0) {
+				status(rep.queueLen + " documents to replicate");
+			} else {
+				status("");
+				clearInterval(interval);
+			}
+		},50);
+	} else {
+		console.error(rep.queueLen + " documents to replicate");
+	}
 
 	return rep.replicate(json);
 })
 .then(function(){
 	console.error("Triggering view index");
-	return rep.
+	return rep.index();
+})
+.then(function(){
+	clearInterval(interval);
 	console.error("Replication complete");
 })
 .catch(function(err){
-	console.error(err.toString(),err.stack||"");
+	clearInterval(interval);
+	console.error()
+	console.error(err);
+	process.exit(1);
 })
 .done();
 
