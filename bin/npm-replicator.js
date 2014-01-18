@@ -35,6 +35,7 @@ function status(line){
 	process.stderr.write(line);
 }
 console.error("Will replicate " + cli.source + " to " + cli.target);
+console.error("Attachments are " + (cli.attachments ? "ON" : "OFF"));
 var targetObj = url.parse(cli.target);
 if (cli.user && cli.pass && !targetObj.auth) {
 	var split = cli.target.split("://");
@@ -82,11 +83,12 @@ setup.then(function(){
 	return rep.replicate(json);
 })
 .then(function(){
+	clearInterval(interval);
+	status("");
 	console.error("Triggering view index");
 	return rep.index();
 })
 .then(function(){
-	clearInterval(interval);
 	console.error("Replication complete");
 })
 .catch(function(err){
