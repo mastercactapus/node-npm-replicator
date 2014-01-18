@@ -1,6 +1,6 @@
 {
   "name": "npm-replicator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "couchdb replicator that will replicate with or without attachments",
   "main": "index.js",
   "bin": {
