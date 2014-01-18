@@ -89,7 +89,7 @@ setup.then(function(){
 	return rep.index();
 })
 .then(function(){
-	console.error("Replication complete");
+	console.error("Replication complete " + rep.count + " documents replicated");
 })
 .catch(function(err){
 	clearInterval(interval);
