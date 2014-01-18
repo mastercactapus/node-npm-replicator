@@ -4,7 +4,7 @@
   "description": "couchdb replicator that will replicate with or without attachments",
   "main": "index.js",
   "bin": {
-    "npm-replicator": "npm-replicator.js"
+    "npm-replicator": "bin/npm-replicator.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
